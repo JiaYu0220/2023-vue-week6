@@ -4,7 +4,8 @@
     <nav>
       <RouterLink to="/">回到前台</RouterLink> |
       <RouterLink to="/admin/products">產品管理</RouterLink> |
-      <RouterLink to="/admin/orders">訂單管理</RouterLink>
+      <RouterLink to="/admin/orders">訂單管理</RouterLink> |
+      <a href="#" @click.prevent="logout">登出</a>
     </nav>
     <RouterView v-if="checkSuccess"/>
   </div>
@@ -32,12 +33,22 @@ export default {
       try {
         const url = `${VITE_URL}/api/user/check`;
         await this.$http.post(url);
-        console.log('成功');
         this.checkSuccess = true;
       } catch (error) {
+        alert('請再登入一次');
+        this.$router.push('/login');
         console.log(error);
-        alert(error.data.message);
-        this.router.push('/login');
+      }
+    },
+    async logout() {
+      try {
+        const url = `${VITE_URL}/logout`;
+        await this.$http.post(url);
+        alert('登出成功');
+        this.$router.push('/login');
+      } catch (error) {
+        console.log(error);
+        alert('登出失敗，請在試一次');
       }
     },
   },
