@@ -1,22 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '../views/HomeView.vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      name: 'user',
+      component: () => import('../views/UserLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'home',
+          component: () => import('../views/UserHome.vue'),
+        },
+        {
+          path: 'products',
+          name: '產品列表',
+          component: () => import('../views/UserProducts.vue'),
+        },
+        {
+          path: 'cart',
+          name: '購物車',
+          component: () => import('../views/UserCart.vue'),
+        },
+      ],
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/UserLogin.vue'),
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('../views/AdminDashboard.vue'),
+      children: [
+        {
+          path: 'products',
+          component: () => import('../views/AdminProducts.vue'),
+        },
+        {
+          path: 'orders',
+          component: () => import('../views/AdminOrders.vue'),
+        },
+      ],
+    },
+
   ],
 });
 
