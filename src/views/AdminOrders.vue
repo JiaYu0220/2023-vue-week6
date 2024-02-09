@@ -36,7 +36,7 @@
             </a>
           </td>
           <td>
-            <LoadingButton :btnClass="'btn-danger'"
+            <LoadingButton class="'btn-danger'"
             :loading-status="(loadingStatus.delOrder === order.id)"
             @click="delOrder(order.id)">刪除</LoadingButton>
           </td>

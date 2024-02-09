@@ -1,5 +1,5 @@
 <template>
-  <button type="button" class="btn" :class="btnClass" :disabled="loadingStatus">
+  <button type="button" class="btn" :disabled="loadingStatus">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"
     v-if="loadingStatus"></span>
     <slot></slot>
@@ -9,7 +9,6 @@
 export default {
   props: {
     loadingStatus: Boolean,
-    btnClass: String,
   },
 };
 </script>
