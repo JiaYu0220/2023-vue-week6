@@ -117,10 +117,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <LoadingButton :btn-class="'btn-outline-secondary'" data-bs-dismiss="modal"
+          <LoadingButton class="btn-outline-secondary" data-bs-dismiss="modal"
           :loading-status="loadingStatus.updateProduct">
           取消</LoadingButton>
-          <LoadingButton :btn-class="'btn-primary'"
+          <LoadingButton class="btn-primary"
           :loading-status="loadingStatus.updateProduct" @click="updateProduct">
           確認</LoadingButton>
         </div>
@@ -131,7 +131,10 @@
 
 <script>
 import { Modal } from 'bootstrap';
-import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingButton from '@/components/shared/button/LoadingButton.vue';
+import { mapState, mapActions } from 'pinia';
+import alertStore from '@/stores/alertStore';
+import loadingStore from '@/stores/loadingStore';
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
 
@@ -144,11 +147,6 @@ export default {
     return {
       tempProduct: {},
       modal: null,
-      loadingStatus: {
-        imageUrl: false,
-        imagesUrl: false,
-        updateProduct: false,
-      },
     };
   },
   mounted() {
@@ -170,8 +168,7 @@ export default {
         const { data } = await this.$http.post(url, formData);
         this.tempProduct.imageUrl = data.imageUrl;
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message);
       }
     },
     async uploadMultiImg(event) {
@@ -199,29 +196,33 @@ export default {
 
         this.loadingStatus.imagesUrl = false;
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message);
       }
     },
     async updateProduct() {
       try {
         this.loadingStatus.updateProduct = true;
+
         let url = `${VITE_URL}/api/${VITE_PATH}/admin/product`;
         let http = 'post';
         if (!this.isNew) {
           url += `/${this.tempProduct.id}`;
           http = 'put';
         }
-        await this.$http[http](url, { data: this.tempProduct });
+        const res = await this.$http[http](url, { data: this.tempProduct });
         this.modal.hide();
         this.$emit('getData');
+
+        this.miniSwal(res.data.message);
         this.loadingStatus.updateProduct = false;
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message);
       }
     },
-
+    ...mapActions(alertStore, ['miniSwal']),
+  },
+  computed: {
+    ...mapState(loadingStore, ['loadingStatus']),
   },
 };
 </script>

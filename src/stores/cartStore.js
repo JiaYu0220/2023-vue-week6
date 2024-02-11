@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-// import { debounce } from 'lodash';
+import Swal from 'sweetalert2';
+import alertStore from './alertStore';
+import loadingStore from './loadingStore';
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
+const { miniSwal, confirmSwal } = alertStore();
+const { loadingStatus, hideLoading } = loadingStore();
 
 export default defineStore('cartStore', {
   state: () => ({
     cart: {},
-    loadingStatus: {
-      productId: '',
-      cartId: '',
-    },
     timer: 0,
   }),
   actions: {
@@ -19,15 +19,15 @@ export default defineStore('cartStore', {
         const url = `${VITE_URL}/api/${VITE_PATH}/cart`;
         const { data } = await axios.get(url);
         this.cart = data.data;
-        console.log(this.cart);
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        Swal.fire(error.data.message || '發生錯誤');
+      } finally {
+        hideLoading();
       }
     },
     async postCart(productId, qty = 1) {
       try {
-        this.loadingStatus.productId = productId;
+        loadingStatus.productId = productId;
 
         const url = `${VITE_URL}/api/${VITE_PATH}/cart`;
 
@@ -37,18 +37,17 @@ export default defineStore('cartStore', {
         };
 
         await axios.post(url, { data });
-        alert('加入購物車');
+        miniSwal('加入購物車');
         this.getCart();
 
-        this.loadingStatus.productId = '';
+        loadingStatus.productId = '';
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        Swal.fire(error.data.message || '發生錯誤');
       }
     },
     async putCart(item) {
       try {
-        this.loadingStatus.cartId = item.id;
+        loadingStatus.cartId = item.id;
 
         const url = `${VITE_URL}/api/${VITE_PATH}/cart/${item.id}`;
 
@@ -60,10 +59,9 @@ export default defineStore('cartStore', {
         await axios.put(url, { data });
         this.getCart();
 
-        this.loadingStatus.cartId = '';
+        loadingStatus.cartId = '';
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        Swal.fire(error.data.message || '發生錯誤');
       }
     },
     debouncePutCart(item) {
@@ -75,32 +73,38 @@ export default defineStore('cartStore', {
         this.putCart(item);
       }, 300);
     },
-    async delCart(cartId) {
+    async delCart(cart) {
       try {
-        this.loadingStatus.cartId = cartId;
+        const swal = await confirmSwal(`確定刪除 ${cart.product.title} ？`);
 
-        const url = `${VITE_URL}/api/${VITE_PATH}/cart/${cartId}`;
+        if (swal.isConfirmed) {
+          loadingStatus.cartId = cart.id;
 
-        await axios.delete(url);
-        alert('已刪除該品項');
-        this.getCart();
+          const url = `${VITE_URL}/api/${VITE_PATH}/cart/${cart.id}`;
 
-        this.loadingStatus.cartId = '';
+          await axios.delete(url);
+          miniSwal(`已刪除 ${cart.product.title}`);
+          this.getCart();
+
+          loadingStatus.cartId = '';
+        }
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        Swal.fire(error.data.message || '發生錯誤');
       }
     },
     async delAllCart() {
       try {
-        const url = `${VITE_URL}/api/${VITE_PATH}/carts`;
+        const swal = await confirmSwal('確認要清空購物車嗎？');
+        if (swal.isConfirmed) {
+          const url = `${VITE_URL}/api/${VITE_PATH}/carts`;
 
-        await axios.delete(url);
-        alert('已清空購物車');
-        this.getCart();
+          await axios.delete(url);
+
+          miniSwal('已清空購物車');
+          this.getCart();
+        }
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        Swal.fire(error.data.message || '發生錯誤');
       }
     },
   },

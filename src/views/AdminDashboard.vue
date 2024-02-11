@@ -35,20 +35,18 @@ export default {
         await this.$http.post(url);
         this.checkSuccess = true;
       } catch (error) {
-        alert('請再登入一次');
+        this.$swal('請再登入一次');
         this.$router.push('/login');
-        console.log(error);
       }
     },
     async logout() {
       try {
         const url = `${VITE_URL}/logout`;
         await this.$http.post(url);
-        alert('登出成功');
+        this.$swal('登出成功');
         this.$router.push('/login');
       } catch (error) {
-        console.log(error);
-        alert('登出失敗，請在試一次');
+        this.$swal('登出失敗，請在試一次');
       }
     },
   },

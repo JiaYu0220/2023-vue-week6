@@ -48,8 +48,7 @@ export default {
         document.cookie = `token=${token}; expires=${new Date(expired)}`;
         this.$router.push('/admin/products');
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message || '發生錯誤');
       }
     },
   },

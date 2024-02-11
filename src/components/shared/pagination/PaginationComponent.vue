@@ -3,7 +3,7 @@
       <ul class="pagination justify-content-center">
         <li class="page-item" :class="{'disabled': !pagination.has_pre}">
           <a class="page-link" href="#" aria-label="Previous" v-if="pagination.has_pre"
-          @click.prevent="$emit('getData', pagination.current_page - 1)">
+          @click.prevent="this.showLoading();$emit('getData', pagination.current_page - 1)">
             <span aria-hidden="true">&laquo;</span>
           </a>
           <span class="page-link" v-else>
@@ -13,12 +13,12 @@
         <li class="page-item" v-for="page in pagination.total_pages" :key="`page${page}`"
         :class="{'active': page === pagination.current_page}" >
           <a class="page-link" href="#" v-if="page !== pagination.current_page"
-          @click.prevent="$emit('getData', page)">{{ page }}</a>
+          @click.prevent="this.showLoading(); $emit('getData', page);">{{ page }}</a>
           <span class="page-link" v-else>{{ page }}</span>
         </li>
         <li class="page-item" :class="{'disabled': !pagination.has_next}">
           <a class="page-link" href="#" aria-label="Next" v-if="pagination.has_next"
-          @click.prevent="$emit('getData', pagination.current_page + 1)">
+          @click.prevent="this.showLoading();$emit('getData', pagination.current_page + 1);">
             <span aria-hidden="true">&raquo;</span>
           </a>
           <span class="page-link" v-else>
@@ -29,7 +29,14 @@
     </nav>
 </template>
 <script>
+import loadingStore from '@/stores/loadingStore';
+
+import { mapActions } from 'pinia';
+
 export default {
   props: ['pagination'],
+  methods: {
+    ...mapActions(loadingStore, ['showLoading']),
+  },
 };
 </script>

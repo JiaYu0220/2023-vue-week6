@@ -1,9 +1,12 @@
 @import './base.scss';
 
 @import 'vue-loading-overlay/dist/css/index.css';
+@import 'sweetalert2/dist/sweetalert2.min.css';
 
 @import 'bootstrap/scss/functions'; // 路徑對應 npm 下面的 bootstrap/scss/functions
 
 @import './variables'; // 自訂義樣式
 
 @import 'bootstrap/scss/bootstrap.scss'; // 路徑對應 npm 下面的 bootstrap/scss/bootstrap
+
+@import './helper.scss';

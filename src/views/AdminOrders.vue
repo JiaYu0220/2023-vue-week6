@@ -1,4 +1,5 @@
 <template>
+  <LoadingOverlay :active="isLoading"></LoadingOverlay>
   <table class="table table-striped table-bordered mt-4">
     <thead>
         <tr>
@@ -36,7 +37,7 @@
             </a>
           </td>
           <td>
-            <LoadingButton class="'btn-danger'"
+            <LoadingButton class="btn-danger"
             :loading-status="(loadingStatus.delOrder === order.id)"
             @click="delOrder(order.id)">刪除</LoadingButton>
           </td>
@@ -46,8 +47,11 @@
   <PaginationComponent :pagination="pagination"></PaginationComponent>
 </template>
 <script>
-import LoadingButton from '@/components/LoadingButton.vue';
-import PaginationComponent from '@/components/PaginationComponent.vue';
+import { mapState, mapActions } from 'pinia';
+import LoadingButton from '@/components/shared/button/LoadingButton.vue';
+import PaginationComponent from '@/components/shared/pagination/PaginationComponent.vue';
+import alertStore from '@/stores/alertStore';
+import loadingStore from '@/stores/loadingStore';
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
 export default {
@@ -55,58 +59,60 @@ export default {
     return {
       orders: [],
       pagination: {},
-      loadingStatus: {
-        delOrder: '',
-      },
     };
   },
   mounted() {
+    this.showLoading();
     this.getOrders();
   },
   methods: {
     async getOrders(page = 1) {
       try {
-        const loader = this.$loading.show();
         const url = `${VITE_URL}/api/${VITE_PATH}/admin/orders?page=${page}`;
         const res = await this.$http.get(url);
         this.orders = res.data.orders;
         this.pagination = res.data.pagination;
-        loader.hide();
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message || '發生錯誤');
+      } finally {
+        this.hideLoading();
       }
     },
     async delOrder(id) {
       try {
-        this.loadingStatus.delOrder = id;
+        const swal = await this.confirmSwal('確定要刪除此訂單嗎？');
+        if (swal.isConfirmed) {
+          this.loadingStatus.delOrder = id;
 
-        const url = `${VITE_URL}/api/${VITE_PATH}/admin/order/${id}`;
-        const res = await this.$http.delete(url);
+          const url = `${VITE_URL}/api/${VITE_PATH}/admin/order/${id}`;
+          const res = await this.$http.delete(url);
 
-        alert(res.data.message);
-        this.loadingStatus.delOrder = '';
-
-        this.getOrders();
+          this.getOrders();
+          this.miniSwal(res.data.message);
+        }
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message || '發生錯誤');
+      } finally {
+        this.loadingStatus.delOrder = '';
       }
     },
     async handlePaidStatus(order) {
       try {
         const data = { ...order, is_paid: !order.is_paid };
         const url = `${VITE_URL}/api/${VITE_PATH}/admin/order/${order.id}`;
-        await this.$http.put(url, { data });
-
+        const res = await this.$http.put(url, { data });
         this.getOrders();
+        this.miniSwal(res.data.message);
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swal(error.data.message || '發生錯誤');
       }
     },
+    ...mapActions(alertStore, ['confirmSwal', 'miniSwal']),
+    ...mapActions(loadingStore, ['showLoading', 'hideLoading']),
   },
-
+  computed: {
+    ...mapState(loadingStore, ['isLoading', 'loadingStatus']),
+  },
   components: { LoadingButton, PaginationComponent },
 };
 </script>

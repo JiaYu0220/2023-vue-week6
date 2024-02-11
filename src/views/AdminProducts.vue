@@ -1,4 +1,5 @@
 <template>
+  <LoadingOverlay :active="isLoading"></LoadingOverlay>
   <div class="container">
     <div class="text-end mt-4">
       <button class="btn btn-primary" @click="openModal('new')">
@@ -64,9 +65,11 @@
 </template>
 
 <script>
-import ProductModal from '@/components/ProductModal.vue';
-import DelProductModal from '@/components/DelProductModal.vue';
-import PaginationComponent from '@/components/PaginationComponent.vue';
+import ProductModal from '@/components/pages/adminProducts/ProductModal.vue';
+import DelProductModal from '@/components/pages/adminProducts/DelProductModal.vue';
+import PaginationComponent from '@/components/shared/pagination/PaginationComponent.vue';
+import { mapState, mapActions } from 'pinia';
+import loadingStore from '@/stores/loadingStore';
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
 
@@ -87,21 +90,20 @@ export default {
     };
   },
   mounted() {
+    this.showLoading();
     this.getAdminProducts();
   },
   methods: {
     async getAdminProducts(page = 1) {
       try {
-        const loader = this.$loading.show();
-
         const url = `${VITE_URL}/api/${VITE_PATH}/admin/products?page=${page}`;
         const { data } = await this.$http.get(url);
         this.products = data.products;
         this.pagination = data.pagination;
-        loader.hide();
       } catch (error) {
-        console.log(error);
-        alert(error.data.message);
+        this.$swel(error.data.message);
+      } finally {
+        this.hideLoading();
       }
     },
     openModal(type, item) {
@@ -126,6 +128,10 @@ export default {
           break;
       }
     },
+    ...mapActions(loadingStore, ['showLoading', 'hideLoading']),
+  },
+  computed: {
+    ...mapState(loadingStore, ['isLoading']),
   },
 };
 </script>
