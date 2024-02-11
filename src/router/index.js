@@ -19,6 +19,11 @@ const router = createRouter({
           component: () => import('../views/UserProducts.vue'),
         },
         {
+          path: 'product/:id',
+          name: '產品頁面',
+          component: () => import('../views/UserSingleProduct.vue'),
+        },
+        {
           path: 'cart',
           name: '購物車',
           component: () => import('../views/UserCart.vue'),
@@ -45,7 +50,16 @@ const router = createRouter({
         },
       ],
     },
-
+    {
+      path: '/products/:pathMatch(.*)*',
+      redirect: {
+        path: '/products',
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      component: () => import('../views/NotFound.vue'),
+    },
   ],
 });
 
